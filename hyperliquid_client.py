@@ -98,6 +98,9 @@ class HyperliquidClient:
         if not self.initialized:
             raise Exception("Client not initialized")
         
+        ## round size to 4 decimal places
+        target_size = round(target_size, 4)
+        
         for attempt in range(max_retries):
             try:
                 current_size = await self.get_position_size(asset)
@@ -111,7 +114,7 @@ class HyperliquidClient:
                 
                 # Place market order with 5% slippage tolerance
                 result = self.exchange.market_open(
-                    coin=asset,
+                    name=asset,
                     is_buy=is_buy, 
                     sz=order_size,
                     slippage=0.05

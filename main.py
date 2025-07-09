@@ -33,6 +33,8 @@ LEVERAGE_BUFFER = 0.5
 ASSET = 'ETH'
 REBALANCE_SCHEDULE = 10 * 60  # 10 minutes
 FUNDING_RATE_LOOKBACK_PERIOD = 7 * 24 * 60 * 60  # 7 days
+MIN_BRIDGE_AMOUNT = 2
+MIN_SWAP_AMOUNT = 2
 
 ASSET_TO_ADDRESS_MAP = {
     'ETH': '0x4200000000000000000000000000000000000006',
@@ -213,11 +215,13 @@ async def bridge_from_hyperliquid_to_unichain(usdc_amount: float):
         # Then bridge from Arbitrum to Unichain
         bridge_success = await bridge_client.bridge_usdc_arbitrum_to_unichain(usdc_amount)
         if not bridge_success:
+            bridge_client.close()
             raise Exception("Bridge to Unichain failed")
             
         logger.info("Successfully bridged USDC to Unichain", amount=usdc_amount)
         
     except Exception as e:
+        bridge_client.close()
         logger.error("Error bridging USDC to Unichain", error=str(e))
         raise
 
@@ -228,11 +232,13 @@ async def bridge_from_unichain_to_hyperliquid(usdc_amount: float):
     try:
         success = await bridge_client.bridge_usdc_unichain_to_arbitrum(usdc_amount)
         if not success:
+            bridge_client.close()
             raise Exception("Bridge from Unichain failed")
             
         logger.info("Successfully bridged asset to Hyperliquid", amount=usdc_amount)
         
     except Exception as e:
+        bridge_client.close()
         logger.error("Error bridging asset to Hyperliquid", error=str(e))
         raise
 
@@ -294,73 +300,56 @@ async def rebalance(hyperliquid_account_value: float, unichain_usdc_balance: flo
         logger.info("Rebalancing analysis", 
                    total_value=T, 
                    optimal_collateral=C, 
-                   case_bounds=[x, x+y])
+                   case_bounds=[x, y, z, p])
         
-        # Step 1: Execute bridging operations first (must complete before swapping)
-        bridging_needed = False
-        
-        if C > x + y:
-            # Case 1: Need more collateral - bridge assets from Unichain to Hyperliquid
-            deficit = C - x - y
-            available_asset_value = z * p
-            
-            if available_asset_value >= deficit:
-                bridge_amount = deficit / p
-                logger.info("Bridging assets to Hyperliquid", amount=bridge_amount)
-                await bridge_from_unichain_to_hyperliquid(bridge_amount)
-                bridging_needed = True
-            else:
-                logger.warning("Insufficient assets for required collateral", 
-                              deficit=deficit, available=available_asset_value)
-                if z > 0:
-                    logger.info("Bridging all available assets to Hyperliquid", amount=z)
-                    await bridge_from_unichain_to_hyperliquid(z)
-                    bridging_needed = True
-                    
-        elif C < x:
-            # Case 2: Have excess collateral - bridge from Hyperliquid to Unichain
+        # CASE 1: Excess collateral on Hyperliquid
+        if x >= C:
             excess = x - C
-            logger.info("Bridging excess collateral to Unichain", amount=excess)
-            await bridge_from_hyperliquid_to_unichain(excess)
-            bridging_needed = True
-        
-        # Step 2: If bridging occurred, wait and get updated balances
-        if bridging_needed:
-            logger.info("Bridging completed, waiting for settlement...")
-            await asyncio.sleep(30)  # Wait for bridging to settle
-            
-            # Get updated balances after bridging
+            if excess > MIN_BRIDGE_AMOUNT:
+                logger.info("Bridging excess collateral to Unichain", amount=excess)
+                # step 1: bridge excess collateral to Unichain
+                await bridge_from_hyperliquid_to_unichain(excess)
             updated_state = await get_position_balances()
-            x = updated_state.hyperliquid_account_value
             y = updated_state.unichain_usdc_balance
-            z = updated_state.unichain_asset_balance
-            p = updated_state.hyperliquid_asset_price
-            
-            # Recalculate with updated balances
-            T = x + y + z * p
-            C = T / (TARGET_LEVERAGE + 1)
-            
-            logger.info("Updated balances after bridging", 
-                       hyperliquid_value=x, 
-                       unichain_usdc=y, 
-                       unichain_asset=z)
-        
-        # Step 3: Execute swapping operations if needed (Case 3 or post-bridging adjustments)
-        target_spot_value = TARGET_LEVERAGE * C
-        current_spot_value = z * p
-        spot_delta_value = target_spot_value - current_spot_value
-        
-        if abs(spot_delta_value) > 1:  # Minimum threshold
-            if spot_delta_value > 0:
-                # Need to buy more spot
-                logger.info("Swapping USDC to asset", amount=spot_delta_value)
-                await swap_from_usdc_to_asset(spot_delta_value)
-            else:
-                # Need to sell spot
-                logger.info("Swapping asset to USDC", amount=abs(spot_delta_value))
-                await swap_from_asset_to_usdc(abs(spot_delta_value))
-        
-        # Step 4: Adjust perp position to target
+            if y > MIN_SWAP_AMOUNT:
+                # step 2: swap asset to USDC on Unichain
+                logger.info("Swapping asset to USDC on Unichain", amount=y)
+                await swap_from_asset_to_usdc(y)
+        ## CASE 2: Excess USDC on Unichain
+        elif x+y >= C:
+            excess = C - x
+            if excess > MIN_BRIDGE_AMOUNT:
+                logger.info("Bridging USDC to Hyperliquid", amount=excess)
+                # step 1: bridge USDC to Hyperliquid
+                await bridge_from_unichain_to_hyperliquid(excess)
+            updated_state = await get_position_balances()
+            y = updated_state.unichain_usdc_balance
+            if y > MIN_SWAP_AMOUNT:
+                # step 2: swap USDC to asset on Unichain
+                logger.info("Swapping USDC to asset on Unichain", amount=excess)
+                await swap_from_usdc_to_asset(y)
+        ## CASE 3: Excess asset on Unichain
+        else:
+            excess_usd = C - x - y
+            excess_asset = excess_usd / p
+            if excess_usd > MIN_SWAP_AMOUNT:
+                # step 1: swap asset to USDC on Unichain
+                logger.info("Swapping asset to USDC on Unichain", amount=excess_asset)
+                await swap_from_asset_to_usdc(excess_asset)
+            updated_state = await get_position_balances()
+            y = updated_state.unichain_usdc_balance
+            if y > MIN_BRIDGE_AMOUNT:
+                # step 2: bridge USDC to Hyperliquid
+                logger.info("Bridging USDC to Hyperliquid", amount=y)
+                await bridge_from_unichain_to_hyperliquid(y)
+
+        # Get updated balances after bridging and swapping
+        updated_state = await get_position_balances()
+        x = updated_state.hyperliquid_account_value
+        z = updated_state.unichain_asset_balance
+
+        target_perp_size = -1*min((TARGET_LEVERAGE + LEVERAGE_BUFFER) * x / p, z)
+        # Step 3: Adjust perp position to target
         await adjust_perp_position(target_perp_size)
         
         logger.info("Rebalancing completed successfully")
@@ -471,6 +460,7 @@ async def main():
             
         except Exception as e:
             logger.error("Strategy execution failed", error=str(e))
+            bridge_client.close()
             # Continue running despite errors
             await asyncio.sleep(60)  # Wait 1 minute before retry
             
