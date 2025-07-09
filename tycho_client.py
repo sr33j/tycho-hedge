@@ -3,8 +3,12 @@ from web3 import Web3
 from dotenv import load_dotenv
 import os
 import asyncio
+import json
 
 load_dotenv()
+
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PUBLIC_ADDRESS = os.getenv("PUBLIC_ADDRESS")
 
@@ -14,19 +18,15 @@ class TychoClient:
         self.wallet_address = PUBLIC_ADDRESS
         self.initialized = False
         
-        # ERC20 ABI
-        self.erc20_abi = [
-            {"constant": True, "inputs": [{"name": "_owner", "type": "address"}], 
-             "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function"},
-            {"constant": True, "inputs": [], "name": "decimals", 
-             "outputs": [{"name": "", "type": "uint8"}], "type": "function"}
-        ]
+        # ERC20 ABI - use absolute path
+        with open(os.path.join(SCRIPT_DIR, 'abis', 'ERC20.json')) as f:
+            self.erc20_abi = json.load(f)
 
     async def initialize(self):
         """Initialize Web3 connection to Unichain."""
-        rpc_url = os.getenv("RPC_URL")
+        rpc_url = os.getenv("UNICHAIN_RPC_URL")
         if not rpc_url:
-            raise ValueError("RPC_URL not set")
+            raise ValueError("UNICHAIN_RPC_URL not set")
         self.w3 = Web3(Web3.HTTPProvider(rpc_url))
         if not self.w3.is_connected():
             raise ConnectionError("Failed to connect to Unichain")
@@ -54,7 +54,7 @@ class TychoClient:
             await self.initialize()
         
         # Validate required environment variables
-        required_env_vars = ["TYCHO_URL", "TYCHO_API_KEY", "RPC_URL", "PRIVATE_KEY"]
+        required_env_vars = ["TYCHO_URL", "TYCHO_API_KEY", "UNICHAIN_RPC_URL", "PRIVATE_KEY"]
         missing_vars = [var for var in required_env_vars if not os.getenv(var)]
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -76,7 +76,7 @@ class TychoClient:
         env.update({
             "TYCHO_URL": os.getenv("TYCHO_URL"),
             "TYCHO_API_KEY": os.getenv("TYCHO_API_KEY"),
-            "RPC_URL": os.getenv("RPC_URL"),
+            "RPC_URL": os.getenv("UNICHAIN_RPC_URL"),
             "PK": os.getenv("PRIVATE_KEY"),  # Note: Rust expects PK, not PRIVATE_KEY
             "RUST_LOG": "info",  # Enable logging
         })

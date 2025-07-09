@@ -18,7 +18,7 @@ from eth_account.signers.local import LocalAccount
 from web3 import Web3
 import structlog
 
-from perp_client import HyperliquidClient
+from hyperliquid_client import HyperliquidClient
 from tycho_client import TychoClient
 from across_client import AcrossClient
 
@@ -211,7 +211,7 @@ async def bridge_from_hyperliquid_to_unichain(usdc_amount: float):
             raise Exception("Hyperliquid withdrawal failed")
         
         # Then bridge from Arbitrum to Unichain
-        bridge_success = await bridge_client.bridge_usdc_hyperliquid_to_unichain(usdc_amount)
+        bridge_success = await bridge_client.bridge_usdc_arbitrum_to_unichain(usdc_amount)
         if not bridge_success:
             raise Exception("Bridge to Unichain failed")
             
@@ -221,16 +221,16 @@ async def bridge_from_hyperliquid_to_unichain(usdc_amount: float):
         logger.error("Error bridging USDC to Unichain", error=str(e))
         raise
 
-async def bridge_from_unichain_to_hyperliquid(asset_amount: float):
+async def bridge_from_unichain_to_hyperliquid(usdc_amount: float):
     """
     Bridge asset from Unichain to Hyperliquid
     """
     try:
-        success = await bridge_client.bridge_asset_unichain_to_hyperliquid(asset_amount)
+        success = await bridge_client.bridge_usdc_unichain_to_arbitrum(usdc_amount)
         if not success:
             raise Exception("Bridge from Unichain failed")
             
-        logger.info("Successfully bridged asset to Hyperliquid", amount=asset_amount)
+        logger.info("Successfully bridged asset to Hyperliquid", amount=usdc_amount)
         
     except Exception as e:
         logger.error("Error bridging asset to Hyperliquid", error=str(e))
