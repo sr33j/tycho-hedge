@@ -19,9 +19,12 @@ class HyperliquidClient:
         self.initialized = False
         self.api_url = constants.MAINNET_API_URL
     
-    async def initialize(self, private_key: str):
+    async def initialize(self):
         """Initialize the Hyperliquid client with account and exchange."""
         try:
+            private_key = os.getenv("PRIVATE_KEY")
+            if not private_key:
+                raise ValueError("PRIVATE_KEY not found in environment variables")
             self.account = Account.from_key(private_key)
             self.address = self.account.address
             

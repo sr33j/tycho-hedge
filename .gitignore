@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+strategy_state.csv
+
 __pycache__/
 *.py[codz]
 *$py.class

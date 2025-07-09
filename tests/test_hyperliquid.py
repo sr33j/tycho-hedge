@@ -10,13 +10,9 @@ load_dotenv()
 
 async def main():
     # Initialize client
-    private_key = os.getenv("PRIVATE_KEY")
-    if not private_key:
-        raise ValueError("PRIVATE_KEY not found in environment variables")
-    
     # Use testnet for safety
     client = HyperliquidClient()
-    await client.initialize(private_key)
+    await client.initialize()
     
     print(f"Initialized client for address: {client.address}")
     
