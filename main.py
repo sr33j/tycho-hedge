@@ -33,8 +33,8 @@ LEVERAGE_BUFFER = 0.5
 ASSET = 'ETH'
 REBALANCE_SCHEDULE = 10 * 60  # 10 minutes
 FUNDING_RATE_LOOKBACK_PERIOD = 7 * 24 * 60 * 60  # 7 days
-MIN_BRIDGE_AMOUNT = 2
-MIN_SWAP_AMOUNT = 2
+MIN_BRIDGE_AMOUNT = 1
+MIN_SWAP_AMOUNT = 1
 
 ASSET_TO_ADDRESS_MAP = {
     'ETH': '0x4200000000000000000000000000000000000006',
@@ -106,7 +106,7 @@ async def get_position_balances() -> StrategyState:
             perp_client.get_mark_price(ASSET),
             perp_client.get_funding_rate(ASSET),
             swap_client.get_token_balance(ASSET_TO_ADDRESS_MAP['USDC']),
-            swap_client.get_token_balance(ASSET_TO_ADDRESS_MAP['ETH']),
+            swap_client.get_token_balance(ASSET_TO_ADDRESS_MAP[ASSET]),
         ]
         
         results = await asyncio.gather(*balance_tasks, return_exceptions=True)
@@ -249,7 +249,7 @@ async def swap_from_usdc_to_asset(usdc_amount: float):
     try:
         success = await swap_client.swap_tokens(
             ASSET_TO_ADDRESS_MAP['USDC'], 
-            ASSET_TO_ADDRESS_MAP['ETH'], 
+            ASSET_TO_ADDRESS_MAP[ASSET], 
             usdc_amount
         )
         if not success:
@@ -267,7 +267,7 @@ async def swap_from_asset_to_usdc(asset_amount: float):
     """
     try:
         success = await swap_client.swap_tokens(
-            ASSET_TO_ADDRESS_MAP['ETH'], 
+            ASSET_TO_ADDRESS_MAP[ASSET], 
             ASSET_TO_ADDRESS_MAP['USDC'], 
             asset_amount
         )
