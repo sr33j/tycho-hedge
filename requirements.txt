@@ -6,3 +6,7 @@ python-dotenv>=1.0.0
 aiofiles>=23.0.0
 asyncio
 statistics 
+
+streamlit>=1.35.0
+pandas>=2.0.0
+altair>=5.0.0 
