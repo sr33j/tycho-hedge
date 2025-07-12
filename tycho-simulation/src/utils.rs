@@ -56,8 +56,30 @@ pub async fn load_all_tokens(
     max_days_since_last_trade: Option<u64>,
 ) -> HashMap<Bytes, Token> {
     info!("Loading tokens from Tycho...");
-    let rpc_url =
-        if no_tls { format!("http://{tycho_url}") } else { format!("https://{tycho_url}") };
+    // Build the RPC URL in a robust manner. Users might provide:
+    //   1. A bare host           -> `tycho-indexer.propellerheads.xyz`
+    //   2. A full HTTP(S) URL    -> `https://tycho-indexer.propellerheads.xyz/unichain`
+    //   3. A WebSocket URL       -> `wss://tycho-indexer.propellerheads.xyz/unichain`
+    // The original logic blindly prepended `https://`, leading to invalid URLs such as
+    // `https://wss://...`. The following code now:
+    //   • Leaves the URL untouched if it already starts with `http://` or `https://`.
+    //   • Re-writes a `wss://` prefix to `https://` because the RPC client expects HTTP(S).
+    //   • Otherwise, prepends either `http://` or `https://` based on the `no_tls` flag.
+    let mut rpc_url = tycho_url.to_string();
+    if rpc_url.starts_with("http://") || rpc_url.starts_with("https://") {
+        // do nothing, already a full HTTP(S) URL
+    } else if rpc_url.starts_with("wss://") {
+        // Replace the websocket scheme with https for HTTP RPC calls
+        rpc_url = rpc_url.replacen("wss://", "https://", 1);
+    } else {
+        // Bare host provided, add scheme based on `no_tls`
+        rpc_url = if no_tls {
+            format!("http://{rpc_url}")
+        } else {
+            format!("https://{rpc_url}")
+        };
+    }
+
     let rpc_client = HttpRPCClient::new(rpc_url.as_str(), auth_key).unwrap();
 
     // Chain specific defaults for special case chains. Otherwise defaults to 42 days.

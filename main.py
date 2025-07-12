@@ -215,13 +215,13 @@ async def bridge_from_hyperliquid_to_unichain(usdc_amount: float):
         # Then bridge from Arbitrum to Unichain
         bridge_success = await bridge_client.bridge_usdc_arbitrum_to_unichain(usdc_amount)
         if not bridge_success:
-            bridge_client.close()
+            await bridge_client.close()
             raise Exception("Bridge to Unichain failed")
             
         logger.info("Successfully bridged USDC to Unichain", amount=usdc_amount)
         
     except Exception as e:
-        bridge_client.close()
+        await bridge_client.close()
         logger.error("Error bridging USDC to Unichain", error=str(e))
         raise
 
@@ -232,13 +232,13 @@ async def bridge_from_unichain_to_hyperliquid(usdc_amount: float):
     try:
         success = await bridge_client.bridge_usdc_unichain_to_arbitrum(usdc_amount)
         if not success:
-            bridge_client.close()
+            await bridge_client.close()
             raise Exception("Bridge from Unichain failed")
             
         logger.info("Successfully bridged asset to Hyperliquid", amount=usdc_amount)
         
     except Exception as e:
-        bridge_client.close()
+        await bridge_client.close()
         logger.error("Error bridging asset to Hyperliquid", error=str(e))
         raise
 
@@ -460,7 +460,7 @@ async def main():
             
         except Exception as e:
             logger.error("Strategy execution failed", error=str(e))
-            bridge_client.close()
+            await bridge_client.close()
             # Continue running despite errors
             await asyncio.sleep(60)  # Wait 1 minute before retry
             
