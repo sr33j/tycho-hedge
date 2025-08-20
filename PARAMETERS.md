@@ -25,10 +25,6 @@ All environment variables should be set in a `.env` file in the project root. Co
 - **Example**: `0x742d35Cc6634C0532925a3b844Bc9e7595f8f123`
 - **Used by**: Balance queries and transaction origination
 
-#### `PK` (Deprecated)
-- **Note**: Some code references this instead of `PRIVATE_KEY`
-- **Action**: Set same value as `PRIVATE_KEY` for compatibility
-
 ### API Configuration
 
 #### `TYCHO_API_KEY`

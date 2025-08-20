@@ -76,10 +76,6 @@ The service will:
 python main.py
 ```
 
-The strategy will make HTTP calls to the running Tycho service for swaps instead of starting the indexer each time.
-
-⚠️ **Current Status**: The service currently provides quotes but swap execution is not yet implemented. The Python client will fall back to the original subprocess method for actual swaps until execution is completed.
-
 ### 3. Test the Service (optional)
 
 ## Tycho Service API
@@ -88,7 +84,7 @@ The service exposes the following endpoints:
 
 - `GET /health` - Check service health and see number of indexed pools
 - `POST /quote` - Get best quote for a token swap
-- `POST /execute` - Execute a token swap (⚠️ **Not yet implemented** - returns placeholder response)
+- `POST /execute` - Execute a token swap
 
 ### Example Usage
 
@@ -110,20 +106,7 @@ curl -X POST http://localhost:3000/quote \
 
 Add these to your `.env` file:
 
-```bash
-# Required for Tycho Service
-TYCHO_URL=your_tycho_url
-TYCHO_API_KEY=your_api_key
-UNICHAIN_RPC_URL=your_rpc_url
-PRIVATE_KEY=your_private_key
-PUBLIC_ADDRESS=your_wallet_address
-
-# Optional
-CHAIN=unichain  # Chain to index (default: unichain)
-PORT=3000       # Service port (default: 3000)
-TYCHO_SERVICE_URL=http://localhost:3000  # Service URL for Python client
-RUST_LOG=info   # Rust logging level
-```
+look at the PARAMETERS.md file and .env.example for more information on the parameters
 
 ## Unwind
 
@@ -132,16 +115,6 @@ To unwind the strategy, run the following command:
 ```bash
 python main.py --unwind
 ```
-
-## Parameters:
-- `OUTPUT_FILE`: A csv file in which your position data will be stored.
-- `TARGET_LEVERAGE`: The target leverage on the perp 
-- `LEVERAGE_BUFFER`: The buffer (+/-) around the leverage to determine if a rebalance is necessary
-- `ASSET`: Ticker of the asset to execute the trade (based on Hyperliquid's tickers)
-- `REBALANCE_SCHEDULE`: Interval to check if a rebalance is required (in seconds)
-- `FUNDING_RATE_LOOKBACK_PERIOD`: Window of funding to look at to determine if the trade should be active (in seconds)
-- `MIN_BRIDGE_AMOUNT`: Minimum amount required to execute a bridge (in USD)
-- `MIN_SWAP_AMOUNT`: Minimum amount require to execute a swap (in USD)
 
 ## Dashboard
 
@@ -160,7 +133,6 @@ The dashboard visualises:
 - **PnL** (absolute & percent) relative to the first recorded state
 - **AUM** (total value across chains)
 - **Price** of the underlying asset
-- **Liquidation Price** (if available)
 - A neon-green line chart of PnL over selectable time ranges (1D, 1W, 1M, 3M, All)
 - A table of recent trades inferred from changes in perp position size
 
