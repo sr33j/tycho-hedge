@@ -1,0 +1,74 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv
+venv/
+ENV/
+env/
+
+# Rust
+# Exclude the entire release directory to prevent copying host binaries
+tycho-swap/target/release/
+tycho-swap/target/debug/
+tycho-swap/target/rls/
+tycho-swap/target/wasm32-unknown-unknown/
+tycho-swap/target/.rustc_info.json
+tycho-swap/target/CACHEDIR.TAG
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Data
+*.csv
+*.db
+*.sqlite
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose*.yml
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# Other
+.env.example

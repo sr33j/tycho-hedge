@@ -1,0 +1,111 @@
+[package]
+name = "tycho-swap"
+version = "0.116.0"
+edition = "2021"
+description = "Provides tools for interacting with protocol states, calculating spot prices, and quoting token swaps."
+repository = "https://github.com/propeller-heads/tycho-simulation"
+homepage = "https://www.propellerheads.xyz/tycho"
+documentation = "https://docs.propellerheads.xyz/tycho"
+keywords = ["propellerheads", "solver", "defi", "dex", "mev"]
+license = "MIT"
+categories = ["finance", "cryptography::cryptocurrencies"]
+readme = "README.md"
+
+
+# Workspace configuration removed - no longer needed
+
+[dependencies]
+# Serialization/Deserialization
+serde = { version = "1.0", features = ["rc"] }
+serde_json = "1.0.105"
+uuid = { version = "1.4.1", features = ["serde", "v4", "fast-rng", "macro-diagnostics"] }
+hex = "0.4.3"
+chrono = { version = "0.4.26", features = ["serde"] }
+
+# Error handling
+thiserror = "1"
+
+# Async & concurrency
+tokio = { version = "1.38.0", features = ["full"] }
+futures = "0.3.31"
+
+# Logging & Tracing
+tracing = "0.1.37"
+
+# Utility
+num-traits = "0.2.17"
+dotenv = "0.15.0"
+itertools = "0.10.5"
+enum_delegate = "0.2.0"
+
+# Enum utilities
+strum = "0.25.0"
+strum_macros = "0.25.2"
+
+# Caching
+mini-moka = "0.10"
+lazy_static = "1.4.0"
+
+# Tycho dependencies
+tycho-common = "0.70.7"
+tycho-client = "0.70.7"
+
+# EVM dependencies
+foundry-config = { git = "https://github.com/foundry-rs/foundry", rev = "ab753e9", optional = true }
+foundry-evm = { git = "https://github.com/foundry-rs/foundry", rev = "ab753e9", optional = true }
+alloy = { version = "1.0.6", features = ["providers", "signer-local", "rpc-types-eth"], optional = true }
+revm = { version = "24.0.0", features = ["alloydb", "serde"], optional = true }
+revm-inspectors = { version = "0.23", features = ["serde"], optional = true }
+num-bigint = { version = "0.4", features = ["serde"] }
+tokio-stream = "0.1.16"
+
+# Dialoguer
+dialoguer = "0.10.4"
+
+# Ekubo
+evm_ekubo_sdk = "0.4.0"
+
+# Dependencies for swap binary
+clap = { version = "4.5.3", features = ["derive"] }
+tracing-subscriber = { version = "0.3.17", features = ["env-filter", "fmt"] }
+tycho-execution = "0.97.0"
+
+# HTTP server dependencies for service
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+[dev-dependencies]
+tokio-test = "0.4.4"
+approx = "0.5.1"
+rstest = "0.23.0"
+tempfile = "3.13.0"
+
+# testing
+mockall = "0.13"
+
+# price_printer example
+anyhow = "1.0.79"
+ratatui = "0.29.0"
+crossterm = { version = "0.28.1", features = ["event-stream"] }
+unicode-width = "0.1.13"
+tracing-appender = "0.2.3"
+
+
+[features]
+default = ["evm"]
+network_tests = []
+evm = [
+    "dep:foundry-config", "dep:foundry-evm", "dep:revm", "dep:revm-inspectors", "dep:alloy",
+]
+
+[[bin]]
+name = "swap"
+path = "bin/swap/main.rs"
+
+[[bin]]
+name = "service"
+path = "bin/service/main.rs"
+
+[profile.bench]
+debug = true

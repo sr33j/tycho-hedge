@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  tycho-hedge:
+    build: .
+    container_name: tycho-hedge-strategy
+    ports:
+      - "3000:3000"    # Tycho service
+      - "8501:8501"    # Streamlit dashboard
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./strategy_state.csv:/app/strategy_state.csv
+      - ./logs:/app/logs    # Mount logs directory
+    environment:
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health && curl -f http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
