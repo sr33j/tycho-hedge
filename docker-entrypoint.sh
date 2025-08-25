@@ -230,14 +230,13 @@ run_strategy_with_restart() {
 # Set up signal handlers
 trap cleanup SIGTERM SIGINT
 
-# Check if .env file exists
-if [ ! -f .env ]; then
-    log_with_timestamp "❌ Error: .env file not found. Please mount .env file to /app/.env"
-    exit 1
+# Load environment variables from .env file if it exists (optional)
+if [ -f .env ]; then
+    log_with_timestamp "📋 Loading environment variables from .env file..."
+    source .env
+else
+    log_with_timestamp "📋 No .env file found, using environment variables from container..."
 fi
-
-# Load environment variables
-source .env
 
 # Validate required environment variables
 required_vars=(

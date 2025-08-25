@@ -8,11 +8,18 @@ services:
       - "3000:3000"    # Tycho service
       - "8501:8501"    # Streamlit dashboard
     volumes:
-      - ./.env:/app/.env:ro
       - ./strategy_state.csv:/app/strategy_state.csv
       - ./logs:/app/logs    # Mount logs directory
     environment:
       - PORT=3000
+      # Required environment variables - set these when running docker-compose
+      # - TYCHO_URL=your_tycho_url
+      # - TYCHO_API_KEY=your_api_key
+      # - UNICHAIN_RPC_URL=your_rpc_url
+      # - PRIVATE_KEY=your_private_key
+      # - PUBLIC_ADDRESS=your_public_address
+      # Optional: mount .env file if you prefer file-based config
+      # - ./.env:/app/.env:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/health && curl -f http://localhost:8501/_stcore/health"]

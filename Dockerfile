@@ -72,6 +72,16 @@ RUN mkdir -p /app/tycho-swap/target/release
 # Copy the built Rust binary from builder stage (this must be AFTER COPY . . to override the host binary)
 COPY --from=rust-builder /usr/local/bin/tycho-service /app/tycho-swap/target/release/service
 
+# Set default environment variables (can be overridden at runtime)
+ENV TYCHO_URL=""
+ENV TYCHO_API_KEY=""
+ENV UNICHAIN_RPC_URL=""
+ENV PRIVATE_KEY=""
+ENV PUBLIC_ADDRESS=""
+ENV PORT=3000
+ENV CHAIN=unichain
+ENV RUST_LOG=info
+
 # Remove unnecessary source files to save space (optional cleanup)
 RUN rm -rf tycho-swap/src tycho-swap/target/debug 2>/dev/null || true
 
