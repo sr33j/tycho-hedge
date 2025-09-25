@@ -1,5 +1,5 @@
 # Basis - Tycho Funding Rate Arbitrage Bot 
-<img width="1494" height="444" alt="image" src="https://github.com/user-attachments/assets/0da8a753-c909-45e9-9b2b-95d0321a410e" />
+<img width="1299" height="741" alt="Screenshot 2025-09-25 at 8 11 13 PM" src="https://github.com/user-attachments/assets/673e5f45-7de5-4fd0-b38f-7a7098a649a6" />
 
 ## Architecture Overview
 
