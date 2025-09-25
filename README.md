@@ -1,15 +1,16 @@
-# Funding Rate Strategy with Tycho
+# Basis - Tycho Funding Rate Arbitrage Bot 
+<img width="1494" height="444" alt="image" src="https://github.com/user-attachments/assets/0da8a753-c909-45e9-9b2b-95d0321a410e" />
 
 ## Architecture Overview
 
-This project consists of two main components:
+Basis consists of two main components:
 
 1. **Tycho Swap Service** (Rust): A long-running service that continuously indexes DEX pools and provides real-time quotes
 2. **Strategy Engine** (Python): Executes the funding rate arbitrage strategy by calling the Tycho service
 
 ## Docker Setup (Recommended)
 
-The easiest way to run the strategy is using Docker:
+The easiest way to run Basis is using Docker:
 
 ### 1. Setup Environment
 ```bash
