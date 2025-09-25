@@ -1,4 +1,9 @@
 # Basis - Tycho Funding Rate Arbitrage Bot 
+
+Basis is implements a delta-neutral funding rate arbitrage between Hyperliquid perpetual futures and Unichain spot markets. Its written in Python and Rust. It uses the [Tycho library](https://docs.propellerheads.xyz/tycho) for spot execution. 
+
+**ℹ️ Project Background:** Built for a Tycho Application bounty – [TAP 7](https://github.com/propeller-heads/tycho-x/blob/main/TAP-7.md). Join developers using Tycho in [tycho.build](https://t.me/+B4CNQwv7dgIyYTJl).
+
 <img width="1299" height="741" alt="Screenshot 2025-09-25 at 8 11 13 PM" src="https://github.com/user-attachments/assets/673e5f45-7de5-4fd0-b38f-7a7098a649a6" />
 
 ## Architecture Overview
@@ -7,6 +12,8 @@ Basis consists of two main components:
 
 1. **Tycho Swap Service** (Rust): A long-running service that continuously indexes DEX pools and provides real-time quotes
 2. **Strategy Engine** (Python): Executes the funding rate arbitrage strategy by calling the Tycho service
+
+Understand how the strategy works [here](https://github.com/sr33j/tycho-hedge/blob/main/STRATEGY.md).
 
 ## Docker Setup (Recommended)
 
